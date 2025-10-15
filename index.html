@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,39 +15,55 @@
             max-width: 100%;
             height: auto;
         }
+        #solution {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>Captcha Solver</h1>
-    <input type="text" id="urlInput" placeholder="Enter image URL" />
-    <button id="loadImage">Load Image</button>
-    <div id="imageContainer">
-        <img id="captchaImage" src="sample.png" alt="Captcha Image" />
+    <div id="captcha-container">
+        <img id="captcha-image" src="" alt="Captcha Image">
     </div>
-    <h2>Captcha Solution: <span id="captchaSolution">B3K9D</span></h2>
+    <div id="solution"></div>
 
     <script>
+        async function solveCaptcha(imageUrl) {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const formData = new FormData();
+            formData.append('image', blob, 'captcha.png');
+
+            const apiResponse = await fetch('https://s23f1003086-llm-project-23f1003086.hf.space/solve-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await apiResponse.json();
+            return result.solution;
+        }
+
         function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            var results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
         }
 
-        function displayCaptcha() {
-            const url = getUrlParameter('url');
-            const captchaImage = document.getElementById('captchaImage');
-            if (url) {
-                captchaImage.src = url;
-            }
+        async function displayCaptcha() {
+            const url = getUrlParameter('url') || 'sample.png';
+            const captchaImage = document.getElementById('captcha-image');
+            captchaImage.src = url;
+
+            const solution = await Promise.race([
+                solveCaptcha(url),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
+            ]).catch(error => 'Failed to solve captcha: ' + error.message);
+
+            document.getElementById('solution').innerText = solution;
         }
 
-        document.getElementById('loadImage').addEventListener('click', function() {
-            const url = document.getElementById('urlInput').value;
-            document.getElementById('captchaImage').src = url;
-        });
-
-        displayCaptcha();
+        window.onload = displayCaptcha;
     </script>
 </body>
 </html>
