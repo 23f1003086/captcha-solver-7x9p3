@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Captcha Solver</h1>
+    <input type="text" id="urlInput" placeholder="Enter image URL" />
+    <button id="loadImage">Load Image</button>
+    <div id="imageContainer">
+        <img id="captchaImage" src="sample.png" alt="Captcha Image" />
+    </div>
+    <h2>Captcha Solution: <span id="captchaSolution">B3K9D</span></h2>
+
+    <script>
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        function displayCaptcha() {
+            const url = getUrlParameter('url');
+            const captchaImage = document.getElementById('captchaImage');
+            if (url) {
+                captchaImage.src = url;
+            }
+        }
+
+        document.getElementById('loadImage').addEventListener('click', function() {
+            const url = document.getElementById('urlInput').value;
+            document.getElementById('captchaImage').src = url;
+        });
+
+        displayCaptcha();
+    </script>
+</body>
+</html>
